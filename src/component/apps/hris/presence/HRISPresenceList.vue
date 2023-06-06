@@ -1,12 +1,6 @@
 <template>
 
   <div>
-    <!-- <div class="text-center">
-      <h1 class="mt-5">
-        Sync Presensi Finger ke GreetDay
-      </h1>
-    </div> -->
-
     <b-row class="pricing-card">
       <b-col
         offset-sm-2
@@ -35,16 +29,16 @@
                     label="Tanggal & Jam Mulai"
                     label-for="v-start-date">
                     <flat-pickr
-                      v-model="form.startdate"
                       class="form-control"
+                      v-model="form.startDate"
                       read-only
                       :config="{ 
+                        minDate: lastData.startData,
                         enableTime: true,
                         enableSeconds:true,
-                        altFormat: 'd M Y H:i',
+                        altFormat: 'd M Y H:i:S',
                         altInput: true,
                         dateFormat: 'Y-m-d H:i:S',
-                        minDate: form.startdate,
                         locale: Indonesian }"/>
                   </b-form-group>
                 </b-col>
@@ -53,15 +47,15 @@
                     label="Tanggal & Jam Akhir"
                     label-for="v-end-date">
                     <flat-pickr
-                      v-model="form.enddate"
                       class="form-control"
+                      v-model="form.endDate"
                       :config="{ 
+                        minDate: lastData.endData,
                         enableTime: true,
                         enableSeconds:true,
-                        altFormat: 'd M Y H:i',
+                        altFormat: 'd M Y H:i:S',
                         altInput: true,
-                        dateFormat: 'Y-m-d H:i',
-                        minDate: form.startdate,
+                        dateFormat: 'Y-m-d H:i:S',
                         locale: Indonesian }"/>
                   </b-form-group>
                 </b-col>
@@ -87,16 +81,16 @@
                     label="Tanggal & Jam Mulai"
                     label-for="v-start-date">
                     <flat-pickr
-                      v-model="dataEndDate"
                       class="form-control"
+                      v-model="formGenereate.startDate"
+                      read-only
                       :config="{ 
+                        minDate: lastData.startData,
                         enableTime: true,
                         enableSeconds:true,
-                        altFormat: 'd M Y H:i',
+                        altFormat: 'd M Y H:i:S',
                         altInput: true,
                         dateFormat: 'Y-m-d H:i:S',
-                        minDate: dataEndDate,
-                        maxDate: dataStartDate,
                         locale: Indonesian }"/>
                   </b-form-group>
                 </b-col>
@@ -105,16 +99,15 @@
                     label="Tanggal & Jam Akhir"
                     label-for="v-end-date">
                     <flat-pickr
-                      v-model="dataStartDate"
                       class="form-control"
+                      v-model="formGenereate.endDate"
                       :config="{ 
+                        minDate: lastData.endData,
                         enableTime: true,
                         enableSeconds:true,
-                        altFormat: 'd M Y H:i',
+                        altFormat: 'd M Y H:i:S',
                         altInput: true,
                         dateFormat: 'Y-m-d H:i:S',
-                        minDate: dataEndDate,
-                        maxDate: dataStartDate,
                         locale: Indonesian }"/>
                   </b-form-group>
                 </b-col>
@@ -150,7 +143,6 @@ import {
 } from 'bootstrap-vue'
 import flatPickr from 'vue-flatpickr-component'
 import { Indonesian } from 'flatpickr/dist/l10n/id'
-import http from '@/customs/axios'
 import http2 from '@/customs/axios/http2'
 
 export default {
@@ -164,100 +156,124 @@ export default {
   },
   data(){
     return{
-      dataStartDate: null,
-      dataEndDate: null,
-      form: {
-        startdate: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
-        enddate: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
+      lastData: {
+        startData: null,
+        endData: null,
       },
-      dataabsensi: [],
+      form: {
+        startDate: '',
+        endDate: ''
+      },
+      formGenereate: {
+        startDate: '',
+        endDate: ''
+      },
+      dataAbsensi: [],
       alert: {
         show: true,
         variant: 'primary',
         message: '<b-icon icon="stopwatch" font-scale="1.5" animation="fade" variant="primary" class="mr-1"> Sedang Memuat...</b-icon>'
       },
-      generatedata: [],
+      generateData: [],
       Indonesian,
     }
   },
   methods: {
-    fetchinfo(){
-      called.$emit('showloading', {show: true, text: 'Sedang memproses...'})
+    async fetchData(){
+      await called.$emit('showloading', {show: true, text: 'Sedang memproses...'})
       this.alert = { show: false, variant: '', message: '' }
-      http2
+      await http2
       .get('hr/attendace/sync-data')
       .then((data) => {
-        this.dataabsensi = data.data
-        if(this.dataabsensi.length === 0){
+        this.dataAbsensi = data.data
+        if(this.dataAbsensi.length === 0){
           this.alert = {
             show: true,
             variant: 'danger',
             message: '<strong>Data tidak ditemukan!</strong>'
           }
+          this.lastData = {
+          startData: '2023-01-01 00:00:00',
+          endData: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
+        }
         }else{
-          const last = this.dataabsensi[0]
           this.alert = {
             show: true,
             variant: 'primary',
             message: `
               <ul>
-                <li>Data Terakhir: <strong>${this.$moment(last.scan_date).format('DD-MMM-YYYY, HH:mm:ss')}</strong></li>
-                <li>Sync Terakhir pada: <strong>${this.$moment(last.created_at).format('DD-MMM-YYYY, HH:mm')}</strong></li>
-                <li>Total Data: <strong>${this.dataabsensi.length}</strong></li>
+                <li>Data Terakhir: <strong>${this.$moment(this.dataAbsensi[0].scan_date).format('DD-MMM-YYYY, HH:mm:ss')}</strong></li>
+                <li>Sync Terakhir pada: <strong>${this.$moment(this.dataAbsensi[0].created_at).format('DD-MMM-YYYY, HH:mm')}</strong></li>
+                <li>Total Data: <strong>${this.dataAbsensi.length}</strong></li>
               </ul>`
           }
-          this.form.startdate = this.$moment(last.scan_date).toISOString()
-          this.form.enddate = this.$moment().toISOString()
-          this.dataStartDate = this.$moment(last.scan_date).toISOString()
-          this.dataEndDate = this.$moment(this.dataabsensi[this.dataabsensi.length -1].scan_date).toISOString()
+          this.lastData = {
+            startData: this.dataAbsensi[this.dataAbsensi.length -1].scan_date,
+            endData: this.dataAbsensi[0].scan_date,
+          }
         }
         called.$emit('hideloading')
       })
       .catch((e) => { 
-        console.error(e)
+        called.$emit('hideloading')
         this.alert = {
           show: true,
           variant: 'danger',
           message: '<strong>Error</strong>'
         }
+        console.error(e)
       })
     },
     handleSync(){
-      called.$emit('showloading', {show: true, text: 'Sedang memproses...'})
-      this.alert = { show: false, variant: '', message: '' }
-      // http
-      // .get('hr/attendace/sync', { params: this.form })
+      let dataAlert = {
+        show: this.alert.show,
+        variant: this.alert.variant,
+        message: this.alert.message,
+      };
+      called.$emit('showloading', {show: true, text: 'Sedang memproses...'});
+      this.alert = { show: false, variant: '', message: '' };
       http2
       .post('hr/attendace/sync', null, { params: this.form })
       .then((data) => { 
-        // console.log(data.data.message) 
-        this.fetchinfo()
+        this.fetchData();
         this.alert = {
           show: show,
           variant: 'primary',
           message: '<b-icon icon="stopwatch" font-scale="1.5" animation="fade" variant="primary" class="mr-1"> Sedang Memuat...</b-icon>'
-        }
-        called.$emit('hideloading')
+        };
+        called.$emit('hideloading');
       })
       .catch((e) => { 
+        called.$emit('hideloading');
         this.alert = {
           show: true,
           variant: 'danger',
-          message: e
-        } 
+          message: `${e.response.data.message} (${e.response.status})`
+        };
+        setInterval(() => {
+          this.alert = {
+            show: dataAlert.show,
+            variant: dataAlert.variant,
+            message: dataAlert.message
+          }
+        }, 3000)
       })
     },
     handleGetGenerate(){
-      this.alert = { show: false, variant: '', message: '' }
-      var filename = this.form.startdate.replace(" ","").replace(":","").replace("-","").replace("-","")+'-'+this.form.enddate.replace(" ","").replace(":","").replace("-","").replace("-","")+'.txt'
-      // http
-      // .get('hr/attendace/generate-data', { params: this.form })
-      http2.post('hr/attendace/generate-data', null, { params: {startdate: this.dataEndDate, enddate: this.dataStartDate} })
+      called.$emit('showloading', {show: true, text: 'Sedang memproses...'});
+      let dataAlert = {
+        show: this.alert.show,
+        variant: this.alert.variant,
+        message: this.alert.message,
+      };
+      this.alert = { show: false, variant: '', message: '' };
+      http2.post('hr/attendace/generate-data', null, { params: {startdate: this.formGenereate.startDate, enddate: this.formGenereate.endDate} })
       .then((data) => {
-        // console.log(data.data)
-        this.generatedata = data.data
-        if(this.generatedata.length > 0){
-          this.handleToTxtFile(this.generatedata, filename)
+        this.generateData = data.data
+        if(this.generateData.length > 0){
+          let filename = this.formGenereate.startDate.replace(/-|\s|:/g,"")+'-'+this.formGenereate.endDate.replace(/-|\s|:/g,"")+'.txt';
+          this.handleToTxtFile(this.generateData, filename)
+          called.$emit('hideloading');
           location.reload
         }else{
           this.alert = {
@@ -265,14 +281,23 @@ export default {
             variant: 'danger',
             message: '<strong>Data tidak ditemukan!</strong>'
           }
+          called.$emit('hideloading');
         }
       })
       .catch((e) => {
+        called.$emit('hideloading');
         this.alert = {
           show: true,
           variant: 'danger',
-          message: e
-        } 
+          message: `${e.response.data.message} (${e.response.status})`
+        };
+        setInterval(() => {
+          this.alert = {
+            show: dataAlert.show,
+            variant: dataAlert.variant,
+            message: dataAlert.message
+          }
+        }, 3000)
       })
     },
     handleToTxtFile(arr, filename){
@@ -287,8 +312,6 @@ export default {
         content += "\n";
       }
       var uri = "data:application/octet-stream," + encodeURIComponent(content);
-      // location.href = uri;
-
       var link = document.createElement('a')
       if(typeof link.download === 'string'){
         document.body.appendChild(link)
@@ -302,7 +325,7 @@ export default {
     }
   },
   mounted(){
-    this.fetchinfo()
+    this.fetchData()
   }
 }
 </script>
