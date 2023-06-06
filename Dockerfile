@@ -15,6 +15,8 @@ RUN npm run build
 FROM nginx:stable-bullseye
 COPY --from=build-stage /home/node/frontend/dist /usr/share/nginx/html
 
+RUN echo "Asia/Jakarta" > /etc/timezone && ln -s /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+
 EXPOSE 80
 
 COPY ./entrypoint.sh /usr/bin/frontend-entrypoint.sh
