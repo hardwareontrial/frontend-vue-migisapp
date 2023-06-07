@@ -4,7 +4,7 @@
 [![Node](https://img.shields.io/badge/Node-16.13.0-1abc9c.svg)](https://nodejs.org/en/blog/release/v16.13.0)
 [![Vue](https://img.shields.io/badge/Vue-2.6-8fce00.svg)](https://v2.vuejs.org/v2/guide/)
 
-## Backend-JS
+## Frontend-Vue
 
 Provide MIG-IS as frontend. This web based on VueJS, Bootstrap-Vue for styling and other node library to complete best perform.
 
