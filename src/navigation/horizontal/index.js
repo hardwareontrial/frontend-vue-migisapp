@@ -98,6 +98,11 @@ export default [
         action: 'read',
       },
       {
+        title: 'Reservasi',
+        icon: 'NavigationIcon',
+        route: 'apps-reservation-dashboard',
+      },
+      {
         title: 'Surat Jalan',
         route: 'apps-sj-list',
         icon: 'TruckIcon',

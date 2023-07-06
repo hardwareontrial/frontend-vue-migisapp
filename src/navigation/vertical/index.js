@@ -32,14 +32,14 @@ export default [
       },
       /**
        * Temporary disable for Backend reason.
-       * 
+       *
        * {
        * title: 'Internal',
        * route: 'apps-phonebook-list-extension',
        * resource: 'AppPhoneExt',
        * action: 'read',
        * },
-       * 
+       *
       */
     ]
   },
@@ -134,7 +134,7 @@ export default [
     children: [
       /**
        * Temporary disable for Backend reason.
-       * 
+       *
        * {
        * title: 'List',
        * route: 'apps-news-data-list',
@@ -145,6 +145,12 @@ export default [
        * },
        */
     ]
+  },
+  /** Reservation */
+  {
+    title: 'Reservasi',
+    icon: 'NavigationIcon',
+    route: 'apps-reservation-dashboard',
   },
   /** Surat Jalan */
   {

@@ -6,6 +6,7 @@ import todo from "./todo"
 import news from "./news"
 import hris from "./hris"
 import elearning from "./elearning"
+import reservation from "./reservation"
 
 export default [
   {
@@ -20,6 +21,7 @@ export default [
       ...usermanagement,
       ...hris,
       ...news,
+      ...reservation,
     ]
   }
 ]
